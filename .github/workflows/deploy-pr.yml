@@ -37,8 +37,8 @@ jobs:
       - name: Deploy vers la VM
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          VM_HOST: 102.215.93.225
-          VM_USER: nkodonou
+          VM_HOST: 102.215.93.128
+          VM_USER: tdsdev
           # Répertoire de destination sur la VM
           DEPLOY_PATH: /var/www/ci-demo/pr-${{ github.event.pull_request.number }}
         run: |
@@ -65,7 +65,7 @@ jobs:
         with:
           script: |
             const pr = context.payload.pull_request.number;
-            const host = '102.215.93.225';
+            const host = '102.215.93.128';
             github.rest.issues.createComment({
               issue_number: pr,
               owner: context.repo.owner,
