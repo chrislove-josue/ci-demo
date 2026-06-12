@@ -39,20 +39,16 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           VM_HOST: 102.215.93.128
           VM_USER: tdsdev
-          # Répertoire de destination sur la VM
           DEPLOY_PATH: /var/www/ci-demo/pr-${{ github.event.pull_request.number }}
         run: |
-          # Prépare la clé SSH
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Crée le dossier de destination sur la VM
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             $VM_USER@$VM_HOST \
             "mkdir -p $DEPLOY_PATH"
 
-          # Copie le build vers la VM
           scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             -r dist/* \
             $VM_USER@$VM_HOST:$DEPLOY_PATH
