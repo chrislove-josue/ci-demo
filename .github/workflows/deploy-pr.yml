@@ -1,4 +1,4 @@
-name: Deploy PR sur VM
+name: Deploy PR sur VM tdsdev
 
 on:
   pull_request:
@@ -60,3 +60,4 @@ jobs:
               repo: context.repo.repo,
               body: `🚀 **Preview déployée !**\n\nURL : http://${host}/ci-demo/pr-${pr}/\n\n_Déploiement automatique via GitHub Actions_`
             });
+
