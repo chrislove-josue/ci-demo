@@ -1,6 +1,5 @@
-name: Deploy PR sur VM
+name: Deploy PR sur VM tdsdev
 
-# Se déclenche à chaque Pull Request vers main
 on:
   pull_request:
     branches:
@@ -13,53 +12,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupère le code de la PR
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      # 2. Installe Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # 3. Installe les dépendances
       - name: npm install
         run: npm install
 
-      # 4. Build de l'app React
       - name: npm run build
         run: npm run build
 
-      # 5. Copie les fichiers vers la VM via SSH
-      #    - SSH_PRIVATE_KEY : ta clé privée SSH (à ajouter dans GitHub Secrets)
       - name: Deploy vers la VM
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PRIVATE_KEY_B64: ${{ secrets.SSH_PRIVATE_KEY_B64 }}
           VM_HOST: 102.215.93.128
           VM_USER: tdsdev
-          # Répertoire de destination sur la VM
           DEPLOY_PATH: /var/www/ci-demo/pr-${{ github.event.pull_request.number }}
         run: |
-          # Prépare la clé SSH
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          echo "$SSH_PRIVATE_KEY_B64" | base64 -d > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          # Crée le dossier de destination sur la VM
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             $VM_USER@$VM_HOST \
             "mkdir -p $DEPLOY_PATH"
 
-          # Copie le build vers la VM
           scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
             -r dist/* \
             $VM_USER@$VM_HOST:$DEPLOY_PATH
 
           echo "✅ Déployé sur http://$VM_HOST/ci-demo/pr-${{ github.event.pull_request.number }}/"
 
-      # 6. Poste un commentaire sur la PR avec le lien
       - name: Commentaire sur la PR
         uses: actions/github-script@v7
         with:
@@ -72,3 +60,4 @@ jobs:
               repo: context.repo.repo,
               body: `🚀 **Preview déployée !**\n\nURL : http://${host}/ci-demo/pr-${pr}/\n\n_Déploiement automatique via GitHub Actions_`
             });
+
